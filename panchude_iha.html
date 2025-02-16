@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Split Money Distribution</title>
+</head>
+<body>
+    <h1>Split Money Distribution</h1>
+    <form id="distributionForm">
+        <label for="X">Total Amount (X):</label>
+        <input type="number" id="X" name="X" required><br><br>
+        <label for="N">Number of People (N):</label>
+        <input type="number" id="N" name="N" required><br><br>
+        <label for="mode">Mode:</label>
+        <select id="mode" name="mode" required>
+            <option value="Casual">Casual</option>
+            <option value="Mega">Mega</option>
+            <option value="Festive">Festive</option>
+        </select><br><br>
+        <input type="submit" value="Calculate Distribution">
+    </form>
+    <h2>Distribution:</h2>
+    <p id="distributionResult"></p>
+
+    <script type="text/javascript">
+        function split_money(X, N, mode) {
+            // Calculate the number of people in each group using floor division
+            let people_per_group = Math.floor(N / 5);
+
+            let group_amounts = [];
+
+            if (mode === "Casual") {
+                group_amounts = [
+                    0.3 * X,
+                    0.25 * X,
+                    0.2 * X,
+                    0.15 * X,
+                    0.1 * X
+                ];
+            }
+
+            if (mode === "Mega") {
+                group_amounts = [
+                    0.45 * X,
+                    0.35 * X,
+                    0.2 * X
+                ];
+            }
+
+            if (mode === "Festive") {
+                group_amounts = [
+                    0.4 * X,
+                    0.3 * X,
+                    0.2 * X,
+                    0.1 * X
+                ];
+            }
+
+            // Function to generate unique descending values for each group
+            function generate_unique_values(total_amount, count) {
+                if (count === 2) {
+                    return [total_amount * 0.6, total_amount * 0.4];
+                } else if (count === 3) {
+                    return [total_amount * 0.45, total_amount * 0.35, total_amount * 0.2];
+                } else {
+                    let values = [];
+                    let remaining_amount = total_amount;
+                    for (let i = count; i > 0; i--) {
+                        let value = remaining_amount / i;
+                        values.push(value);
+                        remaining_amount -= value;
+                    }
+                    return values.sort((a, b) => b - a);
+                }
+            }
+
+            // Create the final distribution list
+            let distribution = [];
+            for (let amount of group_amounts) {
+                distribution = distribution.concat(generate_unique_values(amount, people_per_group));
+            }
+
+            // Ensure all values are unique
+            distribution = [...new Set(distribution)];
+
+            // Convert all values to whole numbers
+            distribution = distribution.map(value => Math.round(value));
+
+            // Sort the distribution
+            distribution.sort((a, b) => b - a);
+
+            // Adjust the final individual prizes such that no two people have the same prizes
+            for (let i = 1; i < distribution.length; i++) {
+                if (distribution[i] === distribution[i - 1]) {
+                    distribution[i] -= 2;
+                    distribution[i - 1] += 2;
+                }
+            }
+
+            return distribution;
+        }
+
+        document.getElementById("distributionForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            let X = parseFloat(document.getElementById("X").value);
+            let N = parseInt(document.getElementById("N").value);
+            let mode = document.getElementById("mode").value;
+            let distribution = split_money(X, N, mode);
+            document.getElementById("distributionResult").innerText = distribution.join(", ");
+        });
+    </script>
+</body>
+</html>
